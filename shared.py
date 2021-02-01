@@ -1,12 +1,12 @@
 import queue
 
 # the queue is used to communicate events between the lcd and the sensors and viceversa
-q_cmds = queue.Queue()
+q_evts = queue.Queue()
 
+# TODO: pass the result among thread with value in the message or a shared variable ?
 # events sent into the queue 
-EVT_RACE_START = 0   # evt sent when the race starts
-EVT_RACE_FINSIH = 0  # evt sent when the race finishes
-
+EVT_RACE_START  = {'id': 0}              # evt sent when the race starts
+EVT_RACE_FINSIH = {'id': 1, 'v': None}   # evt sent when the race finishes with the final lap time (calculate the the cron thread)
 
 # convert a time in millisecons to a triple of [minutes, seconds, milliseconds]
 def from_mills_to_human(mills):

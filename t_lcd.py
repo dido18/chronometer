@@ -49,8 +49,8 @@ def loop():
     state        = STATE_READY
     lap_time     = 0        # store the lap time in milliseconds
     
-    # timer used to calculate the time of each lap and elapsed time
-    t = timers.timer()
+    # only used to show the elapsed time. The real lap time is calucalated in a separated thread.
+    et = timers.timer()
     
     while True:
         btnVal = digitalRead(bntReset)
@@ -61,22 +61,27 @@ def loop():
             lcd.pprint("Ready ")
             if btnVal == 1: 
                 countdown_sequence()
-                t.start()
-                shared.q_cmds.put(shared.EVT_RACE_START)
+                # TODO: here it can be some delay (order of centiseconds) from the end of the count down and when the evt reach the other thread
+                # Maybe pass the start time in the EVT_RACE_START event ??
+                shared.q_evts.put(shared.EVT_RACE_START)
+                et.start()
                 state = STATE_SHOW_ELAPSED
 
         elif state == STATE_SHOW_ELAPSED:
-            elapsed_time = t.get()
-            s = elapsed_time // 1000
-            print("[ThLCD] Elapsed time:", s,"(s)")
+            elapsed_time = et.get()
+            #s = elapsed_time // 1000
+            min, sec, mil = shared.from_mills_to_human(elapsed_time)
+            t_s = "%d:%d.%d"%(min, sec, mil)
             lcd.clear()
-            lcd.pprint("%d"%(s))
+            lcd.pprint(t_s)
+            #print("[ThLCD] Elapsed time:", s,"(s)")
             try:
-                print("[ThLCD] waiting stop race...")
-                # TODO: how to define correct timeout values in order to 
-                evt = shared.q_cmds.get(timeout=10)
-                if evt == shared.EVT_RACE_FINSIH:
-                    lap_time = t.get()
+                #print("[ThLCD] waiting stop race...")
+                # TODO: how to define correct timeout values of the get ???
+                evt = shared.q_evts.get(timeout=500)
+                print("[ThLCD] evt ", evt)
+                if evt['id'] == shared.EVT_RACE_FINSIH['id']:
+                    lap_time = evt['v']
                     print("[ThLCD] FINISH race.", lap_time)
                     state = STATE_SHOW_RESULT
             except QueueEmpty as e:
@@ -99,7 +104,6 @@ def loop():
             lcd.set_cursor(0,1)
             lcd.pprint(t_s)
             
-            print("[ThLCD] Lap Time:", min, ":", sec, ":", mil);
             if btnVal == 1: 
                 state = STATE_READY
         # TODO: is this sleep value enough ??
