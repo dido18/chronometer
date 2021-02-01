@@ -1,11 +1,12 @@
 import queue
 
-# commands received in the queue
-CMD_OBJ_PRESENCE = 0   # an object has been sensed
-#CMD_OBJ_ABSEMCE  = 1  # no object has 
-
-# queue of commands used to exchange cmd between sensors and lcd
+# the queue is used to communicate events between the lcd and the sensors and viceversa
 q_cmds = queue.Queue()
+
+# events sent into the queue 
+EVT_RACE_START = 0   # evt sent when the race starts
+EVT_RACE_FINSIH = 0  # evt sent when the race finishes
+
 
 # convert a time in millisecons to a triple of [minutes, seconds, milliseconds]
 def from_mills_to_human(mills):
