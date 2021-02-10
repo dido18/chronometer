@@ -15,6 +15,18 @@ __define(STATE_SHOW_RESULT,    0x2)
 bntReset  = D10
 pinMode(bntReset, INPUT_PULLDOWN)
 
+# 5 leds for start sequence 
+ledPin0   = D23
+ledPin1   = D22
+ledPin2   = D1
+ledPin3   = D3
+ledPin4   = D21
+ledPins   = [ledPin0, ledPin1, ledPin2, ledPin3, ledPin4]
+
+for ld in ledPins:
+    pinMode(ld, OUTPUT)
+print("Leds initialised")
+
 # global lcd object
 lcd = None
 
@@ -28,16 +40,19 @@ def init_lcd():
             print(e)
         sleep(100)
 
-# function to show the countdown sequence to the lcd screen
+# perform the countdown sequence before the start
 def countdown_sequence():
     global lcd
     lcd.clear()
-    for col in range(5, 0, -1):
-        lcd.set_cursor(col-1, 0)
-        lcd.pprint("#")
-        lcd.set_cursor(col-1, 1)
+    for led in ledPins:
+        digitalWrite(led, HIGH)
+    for col in range(0, 5, 1):
+        lcd.set_cursor(col, 0)
         lcd.pprint("#")
         sleep(1000)
+        print("Led on ", ledPins[col])
+        digitalWrite(ledPins[col], LOW)   # turn the LED OFF by setting the voltage LOW
+        
     lcd.clear()
     # play a sound to the buzzer
 
@@ -55,7 +70,6 @@ def loop():
     while True:
         btnVal = digitalRead(bntReset)
         evt = None
-          
         if state == STATE_READY:
             lcd.clear()
             lcd.pprint("Ready ")
@@ -63,23 +77,26 @@ def loop():
                 countdown_sequence()
                 # TODO: here it can be some delay (order of centiseconds) from the end of the count down and when the evt reach the other thread
                 # Maybe pass the start time in the EVT_RACE_START event ??
+                print("[ThLCD] put START before"),
+
                 shared.q_evts.put(shared.EVT_RACE_START)
+                print("[ThLCD] put START after")
                 et.start()
+                print("[ThLCD] time started")
                 state = STATE_SHOW_ELAPSED
+                print("[ThLCD] setted state", state)
 
         elif state == STATE_SHOW_ELAPSED:
             elapsed_time = et.get()
-            #s = elapsed_time // 1000
+            print("[ThLCD] elapsed_time", elapsed_time)
             min, sec, mil = shared.from_mills_to_human(elapsed_time)
             t_s = "%d:%d.%d"%(min, sec, mil)
             lcd.clear()
             lcd.pprint(t_s)
-            #print("[ThLCD] Elapsed time:", s,"(s)")
+            print("[ThLCD] Elapsed time:", t_s)
             try:
-                #print("[ThLCD] waiting stop race...")
                 # TODO: how to define correct timeout values of the get ???
                 evt = shared.q_evts.get(timeout=500)
-                print("[ThLCD] evt ", evt)
                 if evt['id'] == shared.EVT_RACE_FINSIH['id']:
                     lap_time = evt['v']
                     print("[ThLCD] FINISH race.", lap_time)

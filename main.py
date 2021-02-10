@@ -1,13 +1,15 @@
 ################################################################################
-# RaceCrono
-# A chronometer based on a photoeletric sensor for measuring the lap time.
+# RaceCrono Project
+# A chronometer based on a photoeletric sensor for measuring the a lap time.
 #
 ################################################################################
 import mcu
 import t_cron 
 import t_lcd
 
-# TODO: improvements: (1) send the start time in the evt, (2) mantina the best 3 lap time into a struct and save them into DCZ
+# TODO: improvements: 
+# (1) send the start time in the evt 
+# (2) mantinas the best 3 laps time into a struct and save them into DCZ
 
 try:
     # start the thread that reads the values from the photoeletric sensor
