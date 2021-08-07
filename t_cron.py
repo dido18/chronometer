@@ -13,13 +13,12 @@ __define(S_SENS_EXIT,         0x2)
 
 
 # photoeletric sensor pin
-
 pinPhoto = D9
 pinMode(pinPhoto, INPUT_PULLDOWN)
 
 def loop():
     state = S_SENS_WAIT
-    
+
     # timer used to calculate the lap time.
     t = timers.timer()
     while True:
@@ -29,7 +28,7 @@ def loop():
                 if evt == shared.EVT_RACE_START:
                     t.start()
                     print("    [ThPhoto] receive race start")
-                    # delete the event only if it is a RACE START, beacuse otherwose it can get also the RACE_FINISH event
+                    # delete the event only if it is a RACE START, because otherwose it can get also the RACE_FINISH event
                     shared.q_evts.clear()
                     # TODO wait some delay (or define another START_STATE) in order to avoid to finish immediately because it can enter into MONITOR state
                     state = S_SENS_MONITOR
@@ -41,9 +40,8 @@ def loop():
         elif state == S_SENS_MONITOR:
             if digitalRead(pinPhoto) == 0:
                 lap_time = t.get()
-                #print("[ThPhoto] lap time", lap_time)
+                print("[ThPhoto] lap time", lap_time)
                 shared.EVT_RACE_FINSIH['v'] = lap_time
                 print("    [ThPhoto] sent race finish", shared.EVT_RACE_FINSIH)
                 shared.q_evts.put(shared.EVT_RACE_FINSIH)
                 state = S_SENS_WAIT
-    

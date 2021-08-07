@@ -1,4 +1,6 @@
 import queue
+import timers
+import threading
 
 # the queue is used to communicate events between the lcd and the sensors and viceversa
 q_evts = queue.Queue()
@@ -16,3 +18,8 @@ def from_mills_to_human(mills):
     tseconds //= 60
     minutes = tseconds % 60
     return minutes, seconds, millisec
+
+# the critical section is both the times and the lap_time variable
+#t = timers.timer()
+#lap_time = 0
+#tLock = threading.Lock() # thread used to lock the timers and lap_time resource
