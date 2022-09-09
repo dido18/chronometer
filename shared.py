@@ -9,6 +9,7 @@ q_evts = queue.Queue()
 # events sent into the queue 
 EVT_RACE_START  = {'id': 0}              # evt sent when the race starts
 EVT_RACE_FINSIH = {'id': 1, 'v': None}   # evt sent when the race finishes with the final lap time (calculate the the cron thread)
+EVT_RACE_FINSIH = {'id': 1, 'v': None}   # evt sent when the photoeletric is sensed
 
 # convert a time in millisecons to a triple of [minutes, seconds, milliseconds]
 def from_mills_to_human(mills):
